@@ -18,7 +18,7 @@
 import { host } from '@hermes/plugin-sdk'
 
 const ID = 'file-to-chat'
-const VERSION = '0.2.0'
+const VERSION = '0.2.1'
 const ROW_CLASS = 'group/row'
 const BUTTON_ID = 'file-to-chat-at'
 const STYLE_ID = 'file-to-chat-style'
@@ -127,7 +127,10 @@ async function addToChat(path, isFolder) {
   let ok = false
 
   try {
-    ok = await host.composer.insertText(null, ref, { mode: 'block' })
+    // 'inline' appends on the current line (a single space when the draft has
+    // text); 'block' would insert a blank line first — a visible extra row in
+    // an otherwise empty composer.
+    ok = await host.composer.insertText(null, ref, { mode: 'inline' })
   } catch {
     ok = false
   }
