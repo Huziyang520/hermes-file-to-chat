@@ -1,11 +1,11 @@
 /**
  * file-to-chat — add a file from the sidebar file tree to the current chat.
  *
- * Two entry points, one behaviour (an inline `@file:` reference chip in the
- * composer, exactly what dragging the row into the composer produces):
+ * Two entry points, one behaviour (an inline `@file:` / `@folder:` reference chip
+ * in the composer, exactly what dragging the row into the composer produces):
  *
- *   1. hover a file row → an `@` button appears on the row's right edge;
- *   2. right-click a file row → "添加到对话" at the top of the app's own menu.
+ *   1. hover a row (file or folder) → an `@` button appears on its right edge;
+ *   2. right-click a row → "添加到对话" at the top of the app's own menu.
  *
  * The desktop SDK has no contribution area for the file tree, so this plugin
  * works on the tree's DOM: rows are the `.group/row` elements carrying a
@@ -18,6 +18,7 @@
 import { host } from '@hermes/plugin-sdk'
 
 const ID = 'file-to-chat'
+const VERSION = '0.2.0'
 const ROW_CLASS = 'group/row'
 const BUTTON_ID = 'file-to-chat-at'
 const STYLE_ID = 'file-to-chat-style'
@@ -50,6 +51,13 @@ const CSS = `
 #${BUTTON_ID}:hover {
   background: var(--chrome-action-hover, rgba(127, 127, 127, 0.18));
   color: var(--ui-text-primary, currentColor);
+}
+/* The injected menu item is a clone with no React handlers, so Radix never
+   sets its highlight state — paint the row's own hover/focus look here. */
+[${ITEM_FLAG}]:hover,
+[${ITEM_FLAG}]:focus {
+  background: var(--ui-control-active-background, rgba(127, 127, 127, 0.18));
+  color: var(--foreground, currentColor);
 }
 `
 
@@ -210,7 +218,7 @@ function onPointerOver(event) {
 
   const row = rowFor(target)
 
-  if (!row || isFolderRow(row)) {
+  if (!row) {
     hide()
 
     return
@@ -417,6 +425,8 @@ function createButton() {
 export default {
   id: ID,
   name: 'File to Chat',
+  description: 'Add a file or folder from the sidebar tree to the current chat',
+  version: VERSION,
   register(ctx) {
     api = ctx
 
